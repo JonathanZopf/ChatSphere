@@ -3,6 +3,7 @@ import 'package:chat_sphere/data/chat_thread.dart';
 import 'package:chat_sphere/data/message.dart';
 import 'package:flutter/material.dart';
 
+import '../../db_operations/db_operations.dart';
 import 'chat_bubble.dart';
 
 /// A widget that displays a chat conversation using a list of bubble-style messages.
@@ -17,37 +18,49 @@ class ChatConversationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Controller for managing scroll behavior.
     final ScrollController controller = ScrollController();
 
-    // Style configuration for chat bubbles.
-    final BubbleStyle bubbleStyle = BubbleStyle(
-      gradientColorsUser: BubbleGradient(
-        baseColor: Theme.of(context).colorScheme.primaryContainer,
-        changeFactor: 0.2,
-      ),
-      gradientColorsOther: BubbleGradient(
-        baseColor: Theme.of(context).colorScheme.tertiaryContainer,
-        changeFactor: 0.2,
-      ),
-      textStyleContent: Theme.of(context).textTheme.bodyMedium!,
-      textStyleTimestamp: Theme.of(context).textTheme.labelMedium!.copyWith(fontStyle: FontStyle.italic),
-    );
+    return StreamBuilder<List<Message>>(
+      stream: listenForMessages(chat.otherUser),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    // Displays a list of messages as bubbles.
-    return ListView.builder(
-      controller: controller,
-      padding: const EdgeInsets.all(8.0),
-      itemCount: chat.messages.length,
-      itemBuilder: (context, index) {
-        final message = chat.messages[index];
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
 
-        // Create a chat bubble for each message.
-        return Bubble(
-          isMine: message.isMine,
-          message: message,
-          style: bubbleStyle,
-          scrollable: Scrollable.of(context)!, // Pass the scrollable
+        final messages = snapshot.data ?? [];
+
+        return ListView.builder(
+          controller: controller,
+          padding: const EdgeInsets.all(8.0),
+          itemCount: messages.length,
+          itemBuilder: (context, index) {
+            final message = messages[index];
+            return Bubble(
+              isMine: message.isMine,
+              message: message,
+              scrollable: Scrollable.of(context),
+              style: BubbleStyle(
+                gradientColorsUser: BubbleGradient(
+                  baseColor: Theme.of(context).colorScheme.primaryContainer,
+                  changeFactor: 0.1,
+                ),
+                gradientColorsOther: BubbleGradient(
+                  baseColor: Theme.of(context).colorScheme.tertiaryContainer,
+                  changeFactor: 0.1,
+                ),
+                textStyleContentUser: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                textStyleContentOther: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Theme.of(context).colorScheme.onTertiaryContainer),
+                textStyleTimestamp: Theme.of(context)
+                    .textTheme
+                    .labelMedium!
+                    .copyWith(fontStyle: FontStyle.italic),
+              ),
+            );
+          },
         );
       },
     );
@@ -104,8 +117,11 @@ class BubbleStyle {
   /// Gradient colors for other users' messages.
   final BubbleGradient gradientColorsOther;
 
-  /// Text style for the message content.
-  final TextStyle textStyleContent;
+  /// Text style for the message content of the users bubble.
+  final TextStyle textStyleContentUser;
+
+  /// Text style for the message content of other users' bubbles.
+  final TextStyle textStyleContentOther;
 
   /// Text style for the message timestamp.
   final TextStyle textStyleTimestamp;
@@ -114,7 +130,8 @@ class BubbleStyle {
   const BubbleStyle({
     required this.gradientColorsUser,
     required this.gradientColorsOther,
-    required this.textStyleContent,
+    required this.textStyleContentUser,
+    required this.textStyleContentOther,
     required this.textStyleTimestamp,
   });
 }

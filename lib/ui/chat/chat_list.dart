@@ -42,7 +42,8 @@ class ChatList extends StatelessWidget {
                     final chat = chats[index];
                     return ListTile(
                       title: Text(chat.otherUser.userName),
-                      subtitle: Text(chat.messages.isEmpty ? "" :chat.messages.last.content),
+                      subtitle: Text(chat.messages.isEmpty ? "" :chat.messages.last.content, maxLines: 2),
+                      isThreeLine: true,
                       onTap: () => onChatSelected(chat),
                       selected: chat == selectedChat,
                       shape: RoundedRectangleBorder(

@@ -83,7 +83,9 @@ class Bubble extends StatelessWidget {
                   children: [
                     Text(
                       message.content,
-                      style: style.textStyleContent,
+                      style: isMine
+                          ? style.textStyleContentUser
+                          : style.textStyleContentOther,
                     ),
                     const SizedBox(height: 8.0),
                     Text(

@@ -19,9 +19,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Chat Spehere',
+      title: 'Chat Sphere',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
         useMaterial3: true,
       ),
       home: const RootScreen(),
@@ -57,35 +57,12 @@ class _RootScreenState extends State<RootScreen> {
       );
     }
     if (_signedIn!) {
-      return LoggedInWidget(
-        onSignOut: () async {
-          await FirebaseAuth.instance.signOut();
-        },
-      );
+      return Chat(onSignOut: () {
+        FirebaseAuth.instance.signOut();
+      });
     } else {
       return AuthScreen();
     }
-  }
-}
-
-class LoggedInWidget extends StatelessWidget {
-  final Function() onSignOut;
-  const LoggedInWidget({super.key, required this.onSignOut});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Chat(),
-      appBar: AppBar(
-        title: const Text('Chat Sphere'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: onSignOut,
-          ),
-        ],
-      ),
-    );
   }
 }
 

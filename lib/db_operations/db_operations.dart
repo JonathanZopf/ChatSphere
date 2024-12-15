@@ -106,3 +106,41 @@ Future<void> createChat(ChatUser otherUser) async {
 
   await otherUserChatRef.set(mirroredChatThread.toJson());
 }
+Stream<List<Message>> listenForMessages(ChatUser otherUser) {
+  final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+  // Reference to the messages
+  final messagesRef = FirebaseDatabase.instance.ref(
+    "users/$currentUserId/chatThreads/${otherUser.id}/messages",
+  );
+
+  // Listen for value changes and map them to Message objects
+  return messagesRef.onValue.map((event) {
+    final data = event.snapshot.value as Map<dynamic, dynamic>?;
+
+    if (data == null) return [];
+
+    return data.values.map((e) {
+      return Message.fromJson(Map<String, dynamic>.from(e));
+    }).toList()
+      ..sort((a, b) => a.time.compareTo(b.time)); // Sort by time
+  });
+}
+Stream<List<ChatThread>> listenForChatThreads() {
+  final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+  final chatThreadsRef = FirebaseDatabase.instance.ref(
+    "users/$currentUserId/chatThreads",
+  );
+
+  return chatThreadsRef.onValue.map((event) {
+    final data = event.snapshot.value as Map<dynamic, dynamic>?;
+
+    if (data == null) return [];
+
+    return data.entries.map((e) {
+      final threadData = Map<String, dynamic>.from(e.value);
+      return ChatThread.fromJson(threadData);
+    }).toList();
+  });
+}
