@@ -39,6 +39,8 @@ dependencies:
   firebase_auth: ^5.3.4
   firebase_database: ^11.2.0
   intl: ^0.20.1
+  awesome_side_sheet: ^0.0.3
+  tuple: ^2.0.2
 
 dev_dependencies:
   flutter_test:

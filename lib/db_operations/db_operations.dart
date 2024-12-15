@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:tuple/tuple.dart';
 
 import '../data/chat_thread.dart';
 import '../data/message.dart';
@@ -143,4 +144,25 @@ Stream<List<ChatThread>> listenForChatThreads() {
       return ChatThread.fromJson(threadData);
     }).toList();
   });
+}
+
+Future<Tuple2<ChatUser, List<String>>> fetchUserAndTakenUserNames() async {
+  final user = await fetchUserData();
+  final chatUsers = await getAvailableChatUsers();
+
+  final takenUserNames = chatUsers.map((e) => e.userName).toList();
+  return Tuple2(user, takenUserNames);
+}
+
+Future<void> updateUserName(String newName) async {
+try {
+final database = FirebaseDatabase.instance;
+final userId = FirebaseAuth.instance.currentUser!.uid;
+await database.ref().child('users/$userId').update({
+'userName': newName,
+});
+} catch (e) {
+print('Error updating name: $e');
+throw Exception('Failed to update name.');
+}
 }

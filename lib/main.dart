@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'ui/logged_in_widget.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -57,12 +59,16 @@ class _RootScreenState extends State<RootScreen> {
       );
     }
     if (_signedIn!) {
-      return Chat(onSignOut: () {
-        FirebaseAuth.instance.signOut();
-      });
+      return LoggedInWidget(
+        onSignOut: () async {
+          await FirebaseAuth.instance.signOut();
+        },
+      );
     } else {
       return AuthScreen();
     }
   }
 }
+
+
 
